@@ -1,0 +1,34 @@
+{
+  "name": "modjo",
+  "version": "1.0.0",
+  "description": "My modjo api",
+  "main": "main.js",
+  "scripts": {
+    "build": "./build.sh",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pnpm build && nodemon ./dist/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.574.0",
+    "@fastify/mongodb": "^8.0.0",
+    "@fastify/multipart": "8.2.0",
+    "@types/node": "^20.12.11",
+    "aws-sdk": "^2.1618.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.2.0",
+    "fastify": "^4.27.0",
+    "form-data-encoder": "^4.0.2",
+    "formdata-node": "^6.0.3",
+    "got": "^14.2.1",
+    "install": "^0.13.0",
+    "io-ts": "^2.2.21",
+    "nodemon": "^3.1.0",
+    "pino": "^9.1.0",
+    "pino-pretty": "^11.0.0"
+  }
+}
