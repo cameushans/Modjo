@@ -1,5 +1,5 @@
 node_modules
-./infra/*.t*/
-./infra/*t*
-./infra/*.t
-.env
+infra/*.t*/
+infra/*t
+infra/*.t
+*.env
