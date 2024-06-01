@@ -1,5 +1,4 @@
 import fastify, { FastifyInstance } from 'fastify';
-import { handleDownload } from '../controllers/UploadHere.js';
 import { registerRoutes } from '../routes/routes.js';
 
 function serverFactory(): FastifyInstance {
@@ -12,7 +11,17 @@ function serverFactory(): FastifyInstance {
         ignoreTrailingSlash: true,
         ignoreDuplicateSlashes: true
     })
-    .register(import('@fastify/multipart'))
+    .register(import('@fastify/multipart'), {
+        limits: {
+          fieldNameSize: 1000,
+          fieldSize: Infinity,
+          fields: Infinity,  
+          fileSize: Infinity,
+          files: Infinity,
+          headerPairs: 2000,
+          parts: Infinity,
+        }
+      })
     .register(registerRoutes, { prefix: '/Modjo' })  
 }
 

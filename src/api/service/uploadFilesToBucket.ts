@@ -1,31 +1,61 @@
 import { MultipartFile } from "@fastify/multipart";
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 import AWS from 'aws-sdk';
-import { streamToBuffer } from "../utils/stramToBuffer.js";
 
 const bucket = new AWS.S3({
     region: 'eu-west-3', 
     credentials: {
-        accessKeyId: 'test',
-        secretAccessKey: 'test',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
     },
-    endpoint: "http://s3.localhost.localstack.cloud:4566"
 })
 
-export async function uploadFilesToBucket(files: AsyncIterable<MultipartFile>) {
+export async function uploadFilesToBucket(files: AsyncIterable<MultipartFile>): Promise<void> {
     for await (const file of files) {
-        const buffer = await streamToBuffer(file.file);
-
         const params = {
             Bucket: 'modjo',
-            Key: file.filename,
-            Body: buffer,
-        };
+            Key: `${file.filename}`,
+        }
+        const uploadId = await create(params)
 
-        await bucket.putObject(params)
-              .promise()
-              .then(result => (`Successfully put object with ${result.$response.httpResponse.statusCode} status code`))
-              .catch(e => e)
+        let parts  = 1
+        parts = parts ++
+    
+        const etag = await upload({ 
+            ...params,
+            UploadId: uploadId as string,
+            Key: file.filename, 
+            PartNumber: parts,
+            Body: await file.toBuffer()
+        })
+  
+       complete({
+        ...params,
+        UploadId: uploadId as string,
+        MultipartUpload: {
+            Parts: [{
+                ETag: etag,
+                PartNumber: parts,
+            }],
+        },
+    })
     }
+}
+
+
+async function create(params: AWS.S3.CreateMultipartUploadRequest): Promise<string | undefined> {
+    const createMultipartUploadResponse = await bucket.createMultipartUpload(params).promise()
+    const uploadId = createMultipartUploadResponse.UploadId
+    return uploadId
+}
+
+async function upload(params: AWS.S3.UploadPartRequest): Promise<string | undefined> {
+    const completed = await bucket.uploadPart(params).promise()
+    const etag = completed.ETag
+    return etag
+}
+
+async function complete(params: AWS.S3.CompleteMultipartUploadRequest): Promise<number> {
+    const good = bucket.completeMultipartUpload(params).promise();
+    const code = (await good).$response.httpResponse.statusCode
+    return code
 }
